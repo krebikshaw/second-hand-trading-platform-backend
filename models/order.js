@@ -34,10 +34,13 @@ module.exports = (sequelize, DataTypes) => {
     is_sent: DataTypes.BOOLEAN,
     is_canceled: DataTypes.BOOLEAN,
     is_completed: DataTypes.INTEGER,
-    is_refunded: DataTypes.BOOLEAN
+    is_refunded: DataTypes.BOOLEAN,
+    UserId: DataTypes.INTEGER,
+    deletedAt: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Order',
+    paranoid: true
   });
   return Order;
 };
