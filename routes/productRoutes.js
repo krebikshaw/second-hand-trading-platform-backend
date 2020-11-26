@@ -8,7 +8,10 @@ productRouter.get('/categories', productController.getCategories);
 // productRouter.get('/test', checkAuth(), (req, res) => {
 //   console.log(req.user);
 // });
-productRouter.get('/categories/:id', productController.getProductsFromCategory);
+productRouter.get(
+  '/categories/:id/:status',
+  productController.getProductsFromCategory
+);
 productRouter.get('/vendor/:id', productController.getProductFromVender);
 productRouter.get('/search', productController.search);
 productRouter.get('/:id', productController.getProduct);

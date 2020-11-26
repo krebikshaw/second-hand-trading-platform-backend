@@ -1,7 +1,8 @@
 const db = require('../models');
 const { Op, json } = require('sequelize');
 const Product = db.Product;
-const Product_categories = db.Product_categories;
+const Product_category = db.Product_category;
+const User = db.User;
 
 const productController = {
   getProducts: (req, res) => {
@@ -11,7 +12,14 @@ const productController = {
         where: {
           status,
         },
-        include: Product_categories,
+        include: [
+          {
+            model: Product_category,
+          },
+          {
+            model: User,
+          },
+        ],
         order: [['id', 'DESC']],
       })
         .then((products) => {
@@ -45,7 +53,7 @@ const productController = {
   },
 
   getCategories: (req, res) => {
-    Product_categories.findAll()
+    Product_category.findAll()
       .then((categories) => {
         if (categories.length !== 0) {
           return res.status(200).json({ ok: 1, data: categories });
@@ -57,13 +65,23 @@ const productController = {
       });
   },
 
+  // 只開放通過審查的商品還是說也可以指定未通過以外的商品
   getProductsFromCategory: (req, res) => {
     const id = req.params.id;
-    Product_categories.findOne({
+    const status = req.params.status;
+    Product_category.findOne({
       where: {
         id,
       },
-      include: Product,
+      include: [
+        {
+          model: Product,
+          where: {
+            status,
+          },
+          include: User,
+        },
+      ],
       order: [['id', 'DESC']],
     })
       .then((products) => {
@@ -80,16 +98,26 @@ const productController = {
 
   getProductFromVender: (req, res) => {},
 
+  // 只開放通過審查的商品還是說也可以指定未通過以外的商品
   search: (req, res) => {
     const keyword = req.query.keyword;
     if (!keyword)
       return res.status(400).json({ ok: 0, data: 'keyword is required' });
     Product.findAll({
       where: {
+        status: 1,
         name: {
           [Op.like]: `%${keyword}%`,
         },
       },
+      include: [
+        {
+          model: Product_category,
+        },
+        {
+          model: User,
+        },
+      ],
     })
       .then((products) => {
         if (products.length !== 0) {
@@ -109,7 +137,14 @@ const productController = {
       where: {
         id,
       },
-      include: Product_categories,
+      include: [
+        {
+          model: Product_category,
+        },
+        {
+          model: User,
+        },
+      ],
     })
       .then((product) => {
         console.log(JSON.stringify(product, null, 4));
@@ -184,7 +219,7 @@ const productController = {
         where: {
           id,
         },
-        include: Product_categories,
+        include: Product_category,
       })
       .then((product) => {
         return res
@@ -211,13 +246,6 @@ const productController = {
       payment_method, // 付款方式
       remark, // 備註
     } = req.body;
-
-    function checkData(data) {
-      if (data.trim() !== '') {
-        return data;
-      }
-      return false;
-    }
 
     if (
       !ProductCategoryId ||
