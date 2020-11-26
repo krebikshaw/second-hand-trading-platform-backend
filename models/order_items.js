@@ -28,10 +28,6 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'Order_items',
     paranoid: true
   });
-<<<<<<< HEAD:models/order_item.js
-  return Order_item;
-};
-=======
   return Order_items;
 };
 >>>>>>> 870353c... update 成立訂單:models/order_items.js
