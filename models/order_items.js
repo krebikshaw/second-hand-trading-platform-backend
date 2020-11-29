@@ -30,4 +30,3 @@ module.exports = (sequelize, DataTypes) => {
   });
   return Order_items;
 };
->>>>>>> 870353c... update 成立訂單:models/order_items.js

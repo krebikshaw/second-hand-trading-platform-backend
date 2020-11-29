@@ -1,10 +1,7 @@
 const db = require('../models');
 const Order = db.Order;
-const Product = db.Product;
-const User = db.User;
-const Cart = db.Cart;
-const Order_items = db.Order_items;
-const Cart_items = db.Cart_items;
+const { Op, Sequelize, bulkCreate } = require('sequelize');
+const {Product,User,Cart,Order_items,Cart_items} = db;
 const { checkToken } = require('../middlewares/auth');
 
 const orderController = {
@@ -127,56 +124,111 @@ buyOrder: (req, res) => {
  },
 // 成立訂單
 newOrder: (req, res) => {
-  // 購買人資訊
-  const { client_name, client_phone, client_address } = req.body
+  // 購買商品、資訊
+  const { product_quantity,ProductId,UserId } = req.body
   if (!req.body) {
      return res.status(400).send();
   };
-  // 新增一張訂單 orders
-  Order.create({
-   client_id : req.user.id,
-   client_name: 'Jo',
-   client_phone: '0912121212',
-   client_address: 'qqq',
-   seller_id: 51,
-   UserId: 51,
-   id: 51
-  }).then((order) => { 
-  // 從購物車商品 table 裡面把資料撈出來
+  //console.log(req.body)
+  const productQuantityList = req.body.map(data => Object.values(data)[0]);
+  //console.log(productQuantityList)
+  const ProductIdList = req.body.map(data => Object.values(data)[1]);
+  //console.log(ProductIdList)
+  // 依據使用者下單的商品與數量把資料從購物車撈出來
     Cart_items.findAll({
     where: {
-      CartId : req.user.id,
-    }
-  })
-   .then((Cart_items) => {
-      Product.findAll({
-        where:{
-          id : Cart_items.productId
+      CartId : req.user.id, 
+      ProductId: { [Op.in]: ProductIdList },
+      product_quantity: { [Op.in]: productQuantityList },
+     },
+     include: [{
+        model: Product,
+        right: true, // right join
+        include: {
+          model: User,
+          right: true, // right join
         }
-      }).then((product) => {
-        // 新增到訂單商品 order_items
-      Order_items.create({
-        productId: product.id,
-      }).then(() => {
-        // 同時要把要下單的購物車商品刪掉 
-        Cart.findOne({
-          where: {
-            userId: req.user.id
-          }
-        }).then((Cart) => {
-        Cart_items.findAll({
-          where:{
-            CartId : Cart.id
-          }
-        }).then((items) => {
-          return Cart_items.update({is_empty: 1});
-        }).catch(err => console.log(err))
+      }]
+    })
+     .then((cartItems) => {
+      if (!cartItems) return res.status(400).json({ok:0, message:"invalid data"})
+      //console.log(cartItems)
+      let cartItemData = cartItems.map((cartItem) =>{
+        if (cartItem.Product.quantity < cartItem.product_quantity) return res.status(400).json({ok:0, message:"product quantity is not enough"})
+        return{
+          productId: cartItem.Product.id,
+          product_name: cartItem.Product.name,
+          product_category_id:cartItem.Product.ProductCategoryId,
+          product_picture_url:cartItem.Product.picture_url,
+          product_info:cartItem.Product.info,
+          product_quantity:cartItem.product_quantity,
+          product_price:cartItem.Product.price,
+          product_delivery:cartItem.Product.delivery,
+          sellerId:cartItem.UserId,
+          sellerName: cartItem.Product.User.username,
+          sellerEmail: cartItem.Product.User.email,
+          sellerAddress:cartItem.Product.User.address,
+          origin_quantity: cartItem.Product.quantity,
+        }
       })
-     })
-    }) 
-   })
-  })
- }
-}
+      //console.log(cartItemData)
+      const newQuantity = cartItemData.map(data => Object.values(data)[12] - Object.values(data)[5]);
+      //console.log(newQuantity)
+      let date = new Date();
+      let orderNumber = date.getFullYear().toString() + (date.getMonth()+ 1).toString() + date.getDate().toString() + (Math.round(Math.random() * 10000)).toString();
+      //console.log(orderNumber)
+      // 新增訂單資料
+      Order.create({
+          UserId: req.user.id,
+          client_id: req.user.id,
+          client_name: req.user.username,
+          client_email: req.user.email,
+          client_address:req.user.address,
+          seller_id: cartItemData[0].sellerId,
+          seller_name: cartItemData[0].sellerName,
+          seller_email: cartItemData[0].sellerEmail,
+          seller_address:cartItemData[0].sellerAddress,
+          order_number: orderNumber
+      }).then((order) => {
+      let orderId = order.id
+      //console.log(order)
+      // 新增訂單商品資料
+       Order_items.bulkCreate(
+          cartItemData,
+          {returning: true,
+          updateOnDuplicate:["orderId"]}
+      ).then((orderItems) => {
+        //console.log(orderItems)
+         Order_items.update(
+           {orderId: orderId},
+           {where:{ productId: { [Op.in]: ProductIdList }}}
+        ).then((orderItems) => {
+            // 同時把商品的數量減少  
+            for(let i=0; i<newQuantity.length; i++){
+              Product.update(
+              {quantity: newQuantity[i]},
+              {where:{id:  ProductIdList[i]}
+              }
+            ).then(() =>{
+            // 同時把下單的購物車商品刪掉 
+              Cart_items.findAll({
+                where:{
+                  CartId : req.user.id,
+                  ProductId: { [Op.in]: ProductIdList },
+                  product_quantity: { [Op.in]: productQuantityList },
+                }
+              }).then((cartItems) => 
+                cartItems[i].destroy(),
+              ).then(() => {
+                return res.status(200).json({ok:1,message: 'success',orderNumber:orderNumber });
+              }).catch(err => console.log(err))
+            })
+            }
+          })
+         })
+        })
+       })
+      }
+     }
 
 module.exports = orderController;

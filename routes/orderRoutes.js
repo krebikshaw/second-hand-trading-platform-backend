@@ -9,7 +9,7 @@ const orderController = require('../controllers/orderController');
 // 取得全部訂單資料
 orderRouter.get('/', checkAuth('isAdmin'),orderController.getAllOrders);
 // 取得單一訂單明細
-orderRouter.get('/:id/order', checkAuth(),orderController.getOneOrder);
+orderRouter.get('/order/:id', checkAuth(),orderController.getOneOrder);
 // 刪除訂單資料
 orderRouter.delete('/:id', checkAuth(),orderController.deleteOrder);
 // 訂單取消

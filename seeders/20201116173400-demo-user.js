@@ -7,7 +7,7 @@ module.exports = {
       password: 'Doe',
       nickname: 'Johnny',
       is_admin: 0,
-      is_vender: 0,
+      is_vendor: 0,
       status: 0,
       createdAt: new Date(),
       updatedAt: new Date()
