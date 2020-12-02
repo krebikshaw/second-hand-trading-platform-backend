@@ -23,8 +23,13 @@ const statusSwitch = (status) => {
 };
 
 const checkNumber = (str) => {
-  let testRgexp = /^([1-9]\d*|[0]{1,1})$/;
-  return testRgexp.test(str);
+  let NumberRgexp = /^([1-9]\d*|[0]{1,1})$/;
+  return NumberRgexp.test(str);
+};
+
+const checkInteger = (str) => {
+  let IntegerRgexp = /^[0-9]*[1-9][0-9]*$/;
+  return IntegerRgexp.test(str);
 };
 
 const productController = {
@@ -244,10 +249,10 @@ const productController = {
     } = req.body;
 
     if (
-      !checkNumber(price) ||
-      !checkNumber(quantity) ||
+      !checkInteger(price) ||
+      !checkInteger(quantity) ||
       !checkNumber(delivery) ||
-      !checkNumber(delivery_time) ||
+      !checkInteger(delivery_time) ||
       !checkNumber(payment_method)
     ) {
       return res.status(400).json({ ok: 0, message: '欄位格式不符' });
@@ -259,53 +264,47 @@ const productController = {
       !name ||
       !picture_url ||
       !info ||
-      !price ||
-      !quantity ||
-      !delivery ||
       !delivery_location ||
-      !delivery_time ||
-      !payment_method ||
       !ProductCategoryId.trim() ||
       !name.trim() ||
       !picture_url.trim() ||
       !info.trim() ||
-      !price.trim() ||
-      !quantity.trim() ||
-      !delivery.trim() ||
-      !delivery_location.trim() ||
-      !delivery_time.trim() ||
-      !payment_method.trim()
+      !delivery_location.trim()
     ) {
       return res.status(400).json({ ok: 0, message: '資料不齊全' });
     }
 
-    User.findByPk(UserId).then((user) => {
-      if (user.status === 1)
-        return res.status(404).json({ ok: 0, message: '您已停權' });
-      Product.create({
-        UserId,
-        ProductCategoryId,
-        name,
-        picture_url,
-        info,
-        price,
-        quantity,
-        delivery,
-        delivery_location,
-        delivery_time,
-        payment_method,
-        remark,
-      })
-        .then((product) => {
-          return res.status(200).json({
-            ok: 1,
-            message: 'success',
-          });
+    User.findByPk(UserId)
+      .then((user) => {
+        if (user.status === 1)
+          return res.status(404).json({ ok: 0, message: '您已停權' });
+        Product.create({
+          UserId,
+          ProductCategoryId,
+          name,
+          picture_url,
+          info,
+          price,
+          quantity,
+          delivery,
+          delivery_location,
+          delivery_time,
+          payment_method,
+          remark,
         })
-        .catch((err) => {
-          return res.status(500).json({ ok: 0, message: err });
-        });
-    });
+          .then((_) => {
+            return res.status(200).json({
+              ok: 1,
+              message: 'success',
+            });
+          })
+          .catch((err) => {
+            return res.status(500).json({ ok: 0, message: err });
+          });
+      })
+      .catch((err) => {
+        return res.status(500).json({ ok: 0, message: err });
+      });
   },
 
   //賣家可編輯自己的商品
@@ -326,36 +325,27 @@ const productController = {
     } = req.body;
 
     if (
-      !checkNumber(price) ||
-      !checkNumber(quantity) ||
+      !checkInteger(price) ||
+      !checkInteger(quantity) ||
       !checkNumber(delivery) ||
-      !checkNumber(delivery_time) ||
+      !checkInteger(delivery_time) ||
       !checkNumber(payment_method)
     ) {
       return res.status(400).json({ ok: 0, message: '欄位格式不符' });
     }
 
     if (
+      !UserId ||
       !ProductCategoryId ||
       !name ||
       !picture_url ||
       !info ||
-      !price ||
-      !quantity ||
-      !delivery ||
       !delivery_location ||
-      !delivery_time ||
-      !payment_method ||
       !ProductCategoryId.trim() ||
       !name.trim() ||
       !picture_url.trim() ||
       !info.trim() ||
-      !price.trim() ||
-      !quantity.trim() ||
-      !delivery.trim() ||
-      !delivery_location.trim() ||
-      !delivery_time.trim() ||
-      !payment_method.trim()
+      !delivery_location.trim()
     ) {
       return res.status(400).json({ ok: 0, message: '資料不齊全' });
     }
@@ -389,6 +379,9 @@ const productController = {
               ok: 1,
               message: 'success',
             });
+          })
+          .catch((err) => {
+            return res.status(500).json({ ok: 0, message: err });
           });
       })
       .catch((err) => {
@@ -409,12 +402,17 @@ const productController = {
           return res.status(400).json({ ok: 0, message: 'permission denied' });
         }
         // console.log(JSON.stringify(product, null, 4));
-        return product.destroy().then(() => {
-          res.status(200).json({
-            ok: 1,
-            message: 'success',
+        return product
+          .destroy()
+          .then(() => {
+            res.status(200).json({
+              ok: 1,
+              message: 'success',
+            });
+          })
+          .catch((err) => {
+            return res.status(500).json({ ok: 0, message: err });
           });
-        });
       })
       .catch((err) => {
         return res.status(500).json({ ok: 0, message: err });
