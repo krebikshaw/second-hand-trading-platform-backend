@@ -32,22 +32,25 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       delivery: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.ENUM('0', '1', '2'),
+        defaultValue: '0',
       },
       delivery_location: {
         type: Sequelize.STRING,
       },
       delivery_time: {
-        type: Sequelize.DATE,
+        type: Sequelize.INTEGER,
       },
       payment_method: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.ENUM('0', '1', '2'),
+        defaultValue: '0',
       },
       remark: {
         type: Sequelize.TEXT,
       },
       status: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.ENUM('0', '1', '2'),
+        defaultValue: '0',
       },
       deletedAt: {
         type: Sequelize.DATE,
