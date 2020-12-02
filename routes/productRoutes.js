@@ -6,8 +6,8 @@ const productController = require('../controllers/productController');
 productRouter.get('/', productController.getProducts);
 productRouter.get('/categories', productController.getCategories);
 productRouter.get('/categories/:id', productController.getProductsFromCategory);
-productRouter.get('/vendor/:id', productController.getProductFromVender);
-productRouter.get('/search', productController.search);
+productRouter.get('/vendor/:id?', productController.getProductFromVender);
+productRouter.get('/search', productController.searchProduct);
 productRouter.get('/:id', productController.getProduct);
 productRouter.post('/new', checkAuth('isVendor'), productController.addProduct);
 productRouter.patch(
