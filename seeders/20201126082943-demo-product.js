@@ -5,7 +5,7 @@ module.exports = {
     return queryInterface.bulkInsert('Products', [
       {
         ProductCategoryId: 1,
-        UserId: 1,
+        UserId: 3,
         name: '棒棒糖-待審查',
         picture_url: 'https://i.imgur.com/05CXT8U.jpg',
         info: '棒棒棒',
@@ -21,7 +21,7 @@ module.exports = {
       },
       {
         ProductCategoryId: 1,
-        UserId: 1,
+        UserId: 3,
         name: '棒棒糖-已審核通過',
         picture_url: 'https://i.imgur.com/05CXT8U.jpg',
         info: '棒棒棒',
@@ -37,7 +37,7 @@ module.exports = {
       },
       {
         ProductCategoryId: 1,
-        UserId: 1,
+        UserId: 3,
         name: '棒棒糖-未通過',
         picture_url: 'https://i.imgur.com/05CXT8U.jpg',
         info: '棒棒棒',
@@ -53,7 +53,7 @@ module.exports = {
       },
       {
         ProductCategoryId: 2,
-        UserId: 1,
+        UserId: 4,
         name: '棉花糖-待審查',
         picture_url: 'https://i.imgur.com/05CXT8U.jpg',
         info: '棉棉棉',
@@ -69,7 +69,7 @@ module.exports = {
       },
       {
         ProductCategoryId: 2,
-        UserId: 1,
+        UserId: 4,
         name: '棉花糖-已審核通過',
         picture_url: 'https://i.imgur.com/05CXT8U.jpg',
         info: '棉棉棉',
@@ -85,7 +85,7 @@ module.exports = {
       },
       {
         ProductCategoryId: 2,
-        UserId: 1,
+        UserId: 4,
         name: '棉花糖-未通過',
         picture_url: 'https://i.imgur.com/05CXT8U.jpg',
         info: '棉棉棉',
@@ -101,7 +101,7 @@ module.exports = {
       },
       {
         ProductCategoryId: 3,
-        UserId: 1,
+        UserId: 5,
         name: '麥芽糖-待審查',
         picture_url: 'https://i.imgur.com/05CXT8U.jpg',
         info: '麥麥麥',
@@ -117,7 +117,7 @@ module.exports = {
       },
       {
         ProductCategoryId: 3,
-        UserId: 1,
+        UserId: 5,
         name: '麥芽糖-已審核通過',
         picture_url: 'https://i.imgur.com/05CXT8U.jpg',
         info: '麥麥麥',
@@ -133,7 +133,7 @@ module.exports = {
       },
       {
         ProductCategoryId: 3,
-        UserId: 1,
+        UserId: 5,
         name: '麥芽糖-未通過',
         picture_url: 'https://i.imgur.com/05CXT8U.jpg',
         info: '麥麥麥',
