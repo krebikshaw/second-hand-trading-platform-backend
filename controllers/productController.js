@@ -5,19 +5,19 @@ const statusSwitch = (status) => {
   switch (status) {
     case 'checking':
       //0: 未審查
-      status = 0;
+      status = '0';
       break;
     case 'all':
       // 全部
-      status = [0, 1, 2];
+      status = ['0', '1', '2'];
       break;
     case 'failed':
       //2:未通過
-      status = 2;
+      status = '2';
       break;
     default:
       //1:已審核通過
-      status = 1;
+      status = '1';
   }
   return status;
 };
