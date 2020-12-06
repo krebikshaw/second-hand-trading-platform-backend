@@ -73,51 +73,57 @@ const orderController = {
   // 訂單取消
   cancelOrder: (req, res) => {
     let id = req.user.id;
-    // find the order I would like to cancel
-    Order.findByPk(req.params.id)
-      .then((order) => {
-        /// if there's no order, then return 400 res
-        if (!order) return res.status(400).json(noOrderMessage);
-        // if my id is not client or seller, then return 400 res
-        if (id === order.client_id || id === order.seller_id) {
-          // else update the order
-          order
-            .update({ is_canceled: 1 })
-            // if update successfully, find all the order items
-            .then(() => {
-              Order_items.findAll({ where: { OrderId: order.id } })
-                .then((orderItems) => {
-                  // find product by order item
-                  for (orderItem in orderItems) {
-                    Product.findOne({
-                      where: { id: orderItem.ProductId },
-                    })
-                      .then((product) => {
-                        // if product can be found, then update the quantity
-                        product
-                          .update({
-                            quantity:
-                              product.quantity + orderItem.product_quantity,
-                          })
-                          .then(() => {})
-                          .catch(() => {});
-                      })
-                      // if occur db error, return res 200
-                      .catch(() =>
-                        res.status(200).json({ ok: 1, message: "continue" })
-                      );
-                  }
-                  return res.status(200).json({ ok: 1, message: "success" });
-                })
-                .catch(() =>
-                  res.status(500).json({ ok: 0, message: "fail 1" })
-                );
-            })
-            .catch(() => res.status(500).json({ ok: 0, message: "fail 2" }));
-        }
-        return res.status(200).json({ ok: 1, message: "success" });
-      })
-      .catch(() => res.status(500).json({ ok: 0, message: "fail 4" }));
+    Order.findByPk(req.params.id).then((order) => {
+      if (!order) return res.status(400).json(noOrderMessage);
+      if (id === order.client_id || id === order.seller_id) {
+        order
+          .update({
+            is_canceled: 1,
+          })
+          .then(() => {
+            Order_items.findAll({
+              where: {
+                OrderId: order.id,
+              },
+              include: [
+                {
+                  model: Product,
+                  right: true, // right join
+                },
+              ],
+            }).then((orderItems) => {
+              let orderItemData = orderItems.map((orderItem) => {
+                return {
+                  ProductId: orderItem.ProductId,
+                  product_name: orderItem.product_name,
+                  product_quantity: orderItem.product_quantity,
+                  origin_quantity: orderItem.Product.quantity,
+                };
+              });
+              console.log(orderItemData);
+              const newQuantity = orderItemData.map(
+                (data) => Object.values(data)[2] + Object.values(data)[3]
+              );
+              const productIdList = orderItemData.map(
+                (data) => Object.values(data)[0]
+              );
+              for (let i = 0; i < newQuantity.length; i++) {
+                Product.update(
+                  { quantity: newQuantity[i] },
+                  { where: { id: productIdList[i] } }
+                )
+                  .then(() => {
+                    console.log("success");
+                    return res.status(200).json(successMessage);
+                  })
+                  .catch((err) => res.status(400).json(failToCancelOrder));
+              }
+            });
+          });
+      } else {
+        return res.status(400).json(idIsNotValid);
+      }
+    });
   },
   // 訂單完成
   orderComplete: (req, res) => {
