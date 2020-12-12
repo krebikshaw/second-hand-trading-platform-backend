@@ -20,6 +20,7 @@ manageRouter.post('/faq-categories/new', checkAuth('isAdmin'), manageController.
 manageRouter.patch('/faq-categories/:id', checkAuth('isAdmin'), manageController.editFaqCategory);
 manageRouter.delete('/faq-categories/:id', checkAuth('isAdmin'), manageController.deleteFaqCategory);
 
+manageRouter.post('/mails', manageController.addMail);
 manageRouter.get('/mails', checkAuth('isAdmin'), manageController.getAllMails);
 manageRouter.get('/mails/:id', checkAuth('isAdmin'), manageController.getMail);
 

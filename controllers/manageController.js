@@ -263,8 +263,8 @@ const manageController = {
         const mailsData = {
           ok: 1,
           data: mails.map((mailData) => {
-            const { id, name, email, content } = mailData;
-            return { id, name, email, content };
+            const { id, name, phone, email, content } = mailData;
+            return { id, name, phone, email, content };
           }),
         };
         return res.status(200).json(mailsData);
@@ -278,15 +278,40 @@ const manageController = {
   getMail: (req, res) => {
     Mail.findByPk(req.params.id)
       .then((mail) => {
-        const { id, name, email, content } = mail;
+        const { id, name, email, phone, content } = mail;
         return res.status(200).json({
           ok: 1,
-          data: { id, name, email, content },
+          data: { id, name, email, phone, content },
         });
       })
       .catch((err) => {
         console.log(err);
         res.status(400).json(noDataMessage);
+      });
+  },
+
+  addMail: (req, res) => {
+    const { name, email, phone, content } = req.body;
+    console.log(name, email, phone, content);
+    if (
+      !name ||
+      !email ||
+      !content ||
+      name.trim() === '' ||
+      email.trim() === '' ||
+      content.trim() === ''
+    )
+      return res.status(400).json(emptyErrorMessage);
+    Mail.create({
+      name,
+      email,
+      phone,
+      content,
+    })
+      .then(() => res.status(200).json(successMessage))
+      .catch((err) => {
+        console.log(err);
+        res.status(400).json({ ok: 0, message: err });
       });
   },
 
